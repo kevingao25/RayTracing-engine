@@ -1,30 +1,24 @@
-#include "Color.h"
-#include "Vec3.h"
-#include "Ray.h"
-
 #include <iostream>
 
-// Quadratic formula: b^2 * t^2 + 2bt * (A - C) + (A - C) * (A - C) - r^2 = 0 (see notes)
-bool hit_sphere(const point3& center, double radius, const ray& r) {
-	vec3 oc = r.origin() - center;
-	double a = dot(r.direction(), r.direction());
-	double b = 2.0 * dot(oc, r.direction());
-	double c = dot(oc, oc) - radius * radius;
-	double discriminant = b * b - 4 * a * c;
-	return discriminant > 0;	// Check if the equation has solution, i.e, the ray is hitting the sphere
-}
+#include "Rtweekend.h"
+#include "Color.h"
+#include "hittable_list.h"
+#include "Sphere.h"
 
-// Linearly blends white and blue depending on the height of the y coordinates
-// blendedValue = (1 - t) * startValue + t * endValue
-color ray_color(const ray& r) {
-	// Draw circle
-	if (hit_sphere(point3(0, 0, -1), 0.5, r)) {
-		return color(1, 0, 0);
+
+
+
+color ray_color(const ray& r, const hittable& world) {
+	// Create color for objects hit by the ray
+	hit_record record;
+	if (world.hit(r, 0, infinity, record)) {
+		return 0.5 * (record.normal + color(1, 1, 1));
 	}
 
-	// Paint gradient blue sky
+	// Linearly blends white and blue sky depending on the height of the y coordinates
+	// blendedValue = (1 - t) * startValue + t * endValue
 	vec3 unit_direction = unit_vector(r.direction());
-	float t = 0.5 * (unit_direction.y() + 1.0);
+	double t = 0.5 * (unit_direction.y() + 1.0);
 	return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
@@ -36,10 +30,15 @@ int main() {
 	const int image_width = 400;
 	const int image_height = static_cast<int> (image_width / aspect_ratio);
 
+	// World
+	hittable_list world;
+	world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));		// ball
+	world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));	// ground
+
 	// Camera
-	auto viewport_height = 2.0;
-	auto viewport_width = aspect_ratio * viewport_height;
-	auto focal_length = 1.0;
+	double viewport_height = 2.0;
+	double viewport_width = aspect_ratio * viewport_height;
+	double focal_length = 1.0;
 
 	auto origin = point3(0, 0, 0);
 	auto horizontal = vec3(viewport_width, 0, 0);
@@ -47,23 +46,24 @@ int main() {
 	auto lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
 
 	// Render
-	// PPM format: P3 means colours are in ASCII
-	std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+	std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";	// PPM format, P3 means ASCII
 
 	for (int j = image_height - 1; j >= 0; --j) {
 		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
 
 		for (int i = 0; i < image_width; ++i) {
-			float u = float(i) / (image_width - 1);
-			float v = float(j) / (image_height - 1);
+			double u = double(i) / (image_width - 1);
+			double v = double(j) / (image_height - 1);
 
+			// Create rays
 			auto direction = lower_left_corner + u * horizontal + v * vertical - origin;
 			ray r(origin, direction);
 
-			color pixel_color = ray_color(r);
+			// Paint color for hitted objects
+			color pixel_color = ray_color(r, world);
 			write_color(std::cout, pixel_color);
 		}
 	}
 
-	std::cerr << "\nDone.\n";
+	std::cerr << "\Image generated.\n";
 }

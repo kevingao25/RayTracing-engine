@@ -151,7 +151,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Color.h" />
+    <ClInclude Include="src\Hittable.h" />
+    <ClInclude Include="src\hittable_list.h" />
     <ClInclude Include="src\Ray.h" />
+    <ClInclude Include="src\Rtweekend.h" />
+    <ClInclude Include="src\Sphere.h" />
     <ClInclude Include="src\Vec3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
