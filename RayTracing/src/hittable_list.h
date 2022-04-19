@@ -22,7 +22,7 @@ private:
 };
 
 
-// ???
+// Find the closest hit in the hittable_list and stores in hit_record
 bool hittable_list::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
 	hit_record temp_record;
 	bool hit_anything = false;

@@ -35,7 +35,7 @@
     <ClInclude Include="src\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\hittable_list.h">
+    <ClInclude Include="src\Hittable_list.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rtweekend.h">

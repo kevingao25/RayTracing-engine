@@ -2,18 +2,27 @@
 
 #include "Rtweekend.h"
 #include "Color.h"
-#include "hittable_list.h"
+#include "Hittable_list.h"
 #include "Sphere.h"
 #include "Camera.h"
 
+// Debug
+int ray_count = 0;
 
+color ray_color(const ray& r, const hittable& world, int depth) {
+	// Debug
+	ray_count++;
 
-
-color ray_color(const ray& r, const hittable& world) {
 	// Create color for objects hit by the ray
 	hit_record record;
-	if (world.hit(r, 0, infinity, record)) {
-		return 0.5 * (record.normal + color(1, 1, 1));
+
+	// If we've exceeded the ray bounce limit, no more light is gathered.
+	if (depth <= 0) return color(0, 0, 0);
+
+	if (world.hit(r, 0.001, infinity, record)) {	// use 0.001 to fix shadow acne problem
+		// Diffuse the ray randomly to hit other objects
+		point3 target = record.p + record.normal + random_in_unit_sphere();
+		return 0.5 * ray_color(ray(record.p, target - record.p), world, depth - 1);
 	}
 
 	// Linearly blends white and blue sky depending on the height of the y coordinates
@@ -30,7 +39,8 @@ int main() {
 	const auto aspect_ratio = 16.0 / 9.0;
 	const int image_width = 400;
 	const int image_height = static_cast<int> (image_width / aspect_ratio);
-	const int samples_per_pixel = 100;
+	const int samples_per_pixel = 100;	// Hit 100 rays for each pixels
+	const int max_depth = 50;
 
 	// World
 	hittable_list world;
@@ -50,17 +60,20 @@ int main() {
 
 			color pixel_color(0, 0, 0);
 			for (int s = 0; s < samples_per_pixel; ++s) {
-				/*double u = (i + random_double()) / (image_width - 1);
-				double v = (j + random_double()) / (image_height - 1);*/
 				auto u = (i + random_double()) / (image_width - 1);
 				auto v = (j + random_double()) / (image_height - 1);
 
 				ray r = cam.get_ray(u, v);
-				pixel_color += ray_color(r, world);
+				pixel_color += ray_color(r, world, max_depth);
+
+				// Debug
+				ray_count++;
 			}
 			write_color(std::cout, pixel_color, samples_per_pixel);
 		}
 	}
 
-	std::cerr << "\Image generated.\n";
+
+	std::cerr << "\nImage generated.\n";
+	std::cerr << "Number of rays shooted: " << ray_count << std::endl;
 }
