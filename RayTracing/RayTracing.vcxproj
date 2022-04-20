@@ -154,6 +154,7 @@
     <ClInclude Include="src\Color.h" />
     <ClInclude Include="src\Hittable.h" />
     <ClInclude Include="src\Hittable_list.h" />
+    <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Ray.h" />
     <ClInclude Include="src\Rtweekend.h" />
     <ClInclude Include="src\Sphere.h" />

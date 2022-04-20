@@ -53,6 +53,12 @@ public:
 		return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
 	}
 
+	// Returns true if the vector is close to zero in all dimensions
+	bool near_zero() const {
+		const auto s = 1e-8;
+		return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+	}
+
 private:	// This might need to change
 	double e[3];
 };
@@ -117,6 +123,23 @@ vec3 random_in_unit_sphere() {
 	}
 }
 
+// I have no idea why we do this
 vec3 random_unit_vector() {
 	return unit_vector(random_in_unit_sphere());
+}
+
+vec3 random_in_hemisphere(const vec3& normal) {
+	// This is way more intuitive
+	vec3 in_unit_sphere = random_in_unit_sphere();
+	if (dot(in_unit_sphere, normal) > 0.0) {	// In the same hemisphere as the normal
+		return in_unit_sphere;
+	}
+	else {
+		return -in_unit_sphere;
+	}
+}
+
+// Mirror reflection
+vec3 reflect(const vec3& v, const vec3& n) {
+	return v - 2 * dot(v, n) * n;
 }
